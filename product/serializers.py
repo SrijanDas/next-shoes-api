@@ -4,7 +4,6 @@ from .models import Category, Product, Seller
 
 
 class SellerSerializer(serializers.ModelSerializer):
-    # products = ProductSerializer(many=True)
     class Meta:
         model = Seller
         fields = (
@@ -60,3 +59,15 @@ class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = "__all__"
+
+
+class SellerProductsSerializer(serializers.ModelSerializer):
+    products = ProductSerializer(many=True)
+
+    class Meta:
+        model = Seller
+        fields = (
+            "id",
+            "slug",
+            "products",
+        )

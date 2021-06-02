@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Product, Category, Seller
 from .serializers import ProductSerializer, CategorySerializer, \
-    CategoryListSerializer, SellerListSerializer, SellerSerializer
+    CategoryListSerializer, SellerListSerializer, SellerSerializer, SellerProductsSerializer
 
 from django.db.models import Q
 
@@ -59,19 +59,21 @@ class SellerDetail(APIView):
 
 
 class SellerProducts(APIView):
-    def get_object(self, seller_slug):
-        try:
-            return Product.objects.get(seller__slug=seller_slug)
-        except Exception:
-            raise Http404
+    # def get_object(self, seller_slug):
+    #     try:
+    #         return Seller.objects.get(slug=seller_slug)
+    #     except Exception:
+    #         raise Http404
 
     def get(self, request, seller_slug):
-        products = self.get_object(seller_slug)
-        # print("\n\nproducts----------")
-        # print(seller_slug)
-        # print(products)
-        # serializer = ProductSerializer(products)
-        return Response(f"{seller_slug}")
+        products = Product.objects.filter(Q(seller__slug=seller_slug))
+        print("\n\nproducts----------")
+        serializer = ProductSerializer(products, many=True)
+        print(seller_slug)
+        print(products)
+        print()
+
+        return Response(serializer.data)
 
 
 @api_view(['POST'])
