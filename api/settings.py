@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-uqh-#t9g$5tix*4ty=!=03+!x)1aatb9_q^&%pazqz%rkrt!fx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["ecom-test-api.herokuapp.com", "127.0.0.1", "localhost:8000"]
+ALLOWED_HOSTS = ["vkart.herokuapp.com", "127.0.0.1", "localhost:8000"]
 
 
 # Application definition
