@@ -2,9 +2,12 @@ from django.http import Http404
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Product, Category
-from .serializers import ProductSerializer, CategorySerializer, CategoryListSerializer
+from .models import Product, Category, Seller
+from .serializers import ProductSerializer, CategorySerializer, \
+    CategoryListSerializer, SellerListSerializer, SellerSerializer
+
 from django.db.models import Q
+
 
 # Create your views here.
 
@@ -41,6 +44,36 @@ class CategoryDetail(APIView):
         serializer = CategorySerializer(category)
         return Response(serializer.data)
 
+
+class SellerDetail(APIView):
+    def get_object(self, seller_slug):
+        try:
+            return Seller.objects.get(slug=seller_slug)
+        except Exception as e:
+            raise Http404
+
+    def get(self, request, seller_slug):
+        seller = self.get_object(seller_slug)
+        serializer = SellerSerializer(seller)
+        return Response(serializer.data, 200)
+
+
+class SellerProducts(APIView):
+    def get_object(self, seller_slug):
+        try:
+            return Product.objects.get(seller__slug=seller_slug)
+        except Exception:
+            raise Http404
+
+    def get(self, request, seller_slug):
+        products = self.get_object(seller_slug)
+        # print("\n\nproducts----------")
+        # print(seller_slug)
+        # print(products)
+        # serializer = ProductSerializer(products)
+        return Response(f"{seller_slug}")
+
+
 @api_view(['POST'])
 def search(request):
     query = request.data.get('query', '')
@@ -52,9 +85,16 @@ def search(request):
     else:
         return Response({"products": []})
 
+
 @api_view(['Get'])
 def get_category_list(request):
     categories = Category.objects.all()
     serializer = CategoryListSerializer(categories, many=True)
-    print("\n\n", serializer, "\n\n")
+    return Response(serializer.data)
+
+
+@api_view(['Get'])
+def get_seller_list(request):
+    sellers = Seller.objects.all()
+    serializer = SellerListSerializer(sellers, many=True)
     return Response(serializer.data)
