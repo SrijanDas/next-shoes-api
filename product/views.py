@@ -59,20 +59,15 @@ class SellerDetail(APIView):
 
 
 class SellerProducts(APIView):
-    # def get_object(self, seller_slug):
-    #     try:
-    #         return Seller.objects.get(slug=seller_slug)
-    #     except Exception:
-    #         raise Http404
+    def get_object(self, seller_slug):
+        try:
+            return Product.objects.filter(Q(seller__slug=seller_slug))
+        except Exception:
+            raise Http404
 
     def get(self, request, seller_slug):
-        products = Product.objects.filter(Q(seller__slug=seller_slug))
-        print("\n\nproducts----------")
+        products = self.get_object(seller_slug)
         serializer = ProductSerializer(products, many=True)
-        print(seller_slug)
-        print(products)
-        print()
-
         return Response(serializer.data)
 
 
