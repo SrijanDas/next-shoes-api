@@ -1,62 +1,63 @@
 from rest_framework import serializers
 
-from .models import Category, Product, Seller
+from .models import *
 
 
-class SellerSerializer(serializers.ModelSerializer):
-    # products = ProductSerializer(many=True)
+class BrandNameSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Seller
-        fields = (
-            "id",
-            "slug",
-            "first_name",
-            "last_name",
-            "age",
-            "bio",
-            "rating",
-            "get_image",
-            "get_thumbnail",
-        )
-
-
-class SellerListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Seller
-        fields = "__all__"
+        model = Brand
+        fields = ("id", "name", "logo_url", )
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    seller = SellerSerializer()
+    brand = BrandNameSerializer(many=False)
 
     class Meta:
         model = Product
         fields = (
             "id",
             "name",
-            "get_absolute_url",
-            "description",
-            "price",
-            "get_image",
-            "get_thumbnail",
-            "seller"
+            "brand",
         )
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    products = ProductSerializer(many=True)
-
+class BrandSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = Brand
         fields = (
             "id",
             "name",
             "get_absolute_url",
-            "products",
         )
 
 
-class CategoryListSerializer(serializers.ModelSerializer):
+class BrandListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = Brand
         fields = "__all__"
+
+
+class ColorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Color
+        fields = ("name", )
+
+
+class ProductVariantDetailSerializer(serializers.ModelSerializer):
+    pass
+
+
+class ProductVariantSerializer(serializers.ModelSerializer):
+    color = ColorSerializer(many=False)
+    parent_product = ProductSerializer(many=False)
+
+    class Meta:
+        model = ProductVariant
+        fields = (
+            "id",
+            "image_url",
+            "slug",
+            "parent_product",
+            "color",
+            "date_added"
+        )

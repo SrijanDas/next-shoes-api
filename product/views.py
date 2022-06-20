@@ -1,77 +1,46 @@
+from django.db.models import Q
 from django.http import Http404
 from rest_framework.decorators import api_view
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Product, Category, Seller
-from .serializers import ProductSerializer, CategorySerializer, \
-    CategoryListSerializer, SellerListSerializer, SellerSerializer
+from rest_framework.views import APIView
 
-from django.db.models import Q
+from .serializers import *
 
 
 # Create your views here.
-
-
 class LatestProductsList(APIView):
     def get(self, request):
-        products = Product.objects.all()[:20]
-        serializer = ProductSerializer(products, many=True)
+        products = ProductVariant.objects.filter(main_variant=True).order_by("date_added")[:10]
+        serializer = ProductVariantSerializer(products, many=True)
         return Response(serializer.data)
 
 
 class ProductDetail(APIView):
-    def get_object(self, category_slug, product_slug):
+    def get_object(self, product_slug):
         try:
-            return Product.objects.filter(category__slug=category_slug).get(slug=product_slug)
+            return ProductVariant.objects.get(slug=product_slug)
         except Product.DoesNotExist:
             raise Http404
 
-    def get(self, request, category_slug, product_slug):
-        product = self.get_object(category_slug, product_slug)
-        serializer = ProductSerializer(product)
+    def get(self, request, product_slug):
+        product = self.get_object(product_slug)
+        product_details = ProductVariantDetail.objects.get(pk=product.pk)
+        print(product_details)
+        serializer = ProductVariantSerializer(product)
         return Response(serializer.data)
 
 
-class CategoryDetail(APIView):
-    def get_object(self, category_slug):
+class BrandDetail(APIView):
+    def get_object(self, brand_slug):
         try:
-            return Category.objects.get(slug=category_slug)
-        except Category.DoesNotExist:
+            return Brand.objects.get(slug=brand_slug)
+        except Brand.DoesNotExist:
             raise Http404
 
-    def get(self, request, category_slug):
-        category = self.get_object(category_slug)
-        serializer = CategorySerializer(category)
+    def get(self, request, brand_slug):
+        brand = self.get_object(brand_slug)
+        serializer = BrandSerializer(brand)
         return Response(serializer.data)
-
-
-class SellerDetail(APIView):
-    def get_object(self, seller_slug):
-        try:
-            return Seller.objects.get(slug=seller_slug)
-        except Exception as e:
-            raise Http404
-
-    def get(self, request, seller_slug):
-        seller = self.get_object(seller_slug)
-        serializer = SellerSerializer(seller)
-        return Response(serializer.data, 200)
-
-
-class SellerProducts(APIView):
-    def get_object(self, seller_slug):
-        try:
-            return Product.objects.get(seller__slug=seller_slug)
-        except Exception:
-            raise Http404
-
-    def get(self, request, seller_slug):
-        products = self.get_object(seller_slug)
-        # print("\n\nproducts----------")
-        # print(seller_slug)
-        # print(products)
-        # serializer = ProductSerializer(products)
-        return Response(f"{seller_slug}")
 
 
 @api_view(['POST'])
@@ -87,14 +56,9 @@ def search(request):
 
 
 @api_view(['Get'])
-def get_category_list(request):
-    categories = Category.objects.all()
-    serializer = CategoryListSerializer(categories, many=True)
+def get_brand_list(request):
+    categories = Brand.objects.all()
+    serializer = BrandListSerializer(categories, many=True)
     return Response(serializer.data)
 
 
-@api_view(['Get'])
-def get_seller_list(request):
-    sellers = Seller.objects.all()
-    serializer = SellerListSerializer(sellers, many=True)
-    return Response(serializer.data)
