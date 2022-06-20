@@ -44,12 +44,19 @@ class ColorSerializer(serializers.ModelSerializer):
 
 
 class ProductVariantDetailSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = ProductVariantDetail
+        fields = (
+            "size",
+            "price",
+            "quantity",
+        )
 
 
 class ProductVariantSerializer(serializers.ModelSerializer):
-    color = ColorSerializer(many=False)
     parent_product = ProductSerializer(many=False)
+    product_details = serializers.SerializerMethodField("get_details")
+    color = serializers.SerializerMethodField("get_color")
 
     class Meta:
         model = ProductVariant
@@ -59,5 +66,16 @@ class ProductVariantSerializer(serializers.ModelSerializer):
             "slug",
             "parent_product",
             "color",
-            "date_added"
+            "date_added",
+            "product_details",
         )
+
+    def get_details(self, product_variant):
+        product_details_objs = ProductVariantDetail.objects.filter(product_variant_id=product_variant.id)
+        return ProductVariantDetailSerializer(product_details_objs, many=True).data
+
+    def get_color(self, product_variant):
+        color = Color.objects.get(id=product_variant.color.pk)
+        return color.name
+
+

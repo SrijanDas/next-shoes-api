@@ -80,6 +80,7 @@ class Size(models.Model):
         return super().save(*args, **kwargs)
 
 
+# stores different color variants for one single parent product
 class ProductVariant(models.Model):
     parent_product = models.ForeignKey(Product, on_delete=models.CASCADE)
     color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True)
@@ -96,8 +97,9 @@ class ProductVariant(models.Model):
         return super().save(*args, **kwargs)
 
 
+# stores different "sizes", "price", available "quantity" for different color variants
 class ProductVariantDetail(models.Model):
-    product = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
     size = models.ForeignKey(Size, on_delete=models.SET_NULL, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     quantity = models.IntegerField(null=True)
@@ -108,9 +110,9 @@ class ProductVariantDetail(models.Model):
     #     verbose_name_plural = "product details"
 
     def __str__(self):
-        return self.product.slug
+        return self.product_variant.slug
 
     def save(self, *args, **kwargs):  # new
-        self.slug = slugify(f"{self.product.slug}-{str(self.size)}")
+        self.slug = slugify(f"{self.product_variant.slug}-{str(self.size)}")
         return super().save(*args, **kwargs)
 

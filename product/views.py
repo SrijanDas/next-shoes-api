@@ -22,11 +22,22 @@ class ProductDetail(APIView):
         except Product.DoesNotExist:
             raise Http404
 
+    def get_product_details(self, product_variant):
+        try:
+            return ProductVariantDetail.objects.filter(product_variant_id=product_variant.id)
+        except Product.DoesNotExist:
+            raise Http404
+
     def get(self, request, product_slug):
-        product = self.get_object(product_slug)
-        product_details = ProductVariantDetail.objects.get(pk=product.pk)
-        print(product_details)
-        serializer = ProductVariantSerializer(product)
+        product_variant = self.get_object(product_slug)
+        product_details = self.get_product_details(product_variant)
+
+        product_details_serializer = ProductVariantDetailSerializer(product_details)
+
+        # adding product variant details and finally sending the response
+        serializer = ProductVariantSerializer(product_variant)
+        # serializer.data["product_details"] = product_details_serializer.data
+        # print(serializer.data["product_details"])
         return Response(serializer.data)
 
 
