@@ -27,7 +27,7 @@ class BrandSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "get_absolute_url",
+            "logo_url",
         )
 
 
@@ -44,6 +44,8 @@ class ColorSerializer(serializers.ModelSerializer):
 
 
 class ProductVariantDetailSerializer(serializers.ModelSerializer):
+    size = serializers.SerializerMethodField("get_size")
+
     class Meta:
         model = ProductVariantDetail
         fields = (
@@ -52,30 +54,61 @@ class ProductVariantDetailSerializer(serializers.ModelSerializer):
             "quantity",
         )
 
+    def get_size(self, product_details):
+        return product_details.size.size
 
-class ProductVariantSerializer(serializers.ModelSerializer):
-    parent_product = ProductSerializer(many=False)
-    product_details = serializers.SerializerMethodField("get_details")
+
+class ColorVariantSerializer(serializers.ModelSerializer):
+    brand = serializers.SerializerMethodField("get_brand")
+    # product_details = serializers.SerializerMethodField("get_details")
     color = serializers.SerializerMethodField("get_color")
+    available_colors = serializers.SerializerMethodField("get_colors")
+    starting_price = serializers.SerializerMethodField("get_price")
+    name = serializers.SerializerMethodField("get_name")
 
     class Meta:
         model = ProductVariant
         fields = (
             "id",
+            "name",
             "image_url",
             "slug",
-            "parent_product",
+            "brand",
             "color",
-            "date_added",
-            "product_details",
+            "available_colors",
+            # "product_details",
+            "starting_price",
         )
 
-    def get_details(self, product_variant):
-        product_details_objs = ProductVariantDetail.objects.filter(product_variant_id=product_variant.id)
-        return ProductVariantDetailSerializer(product_details_objs, many=True).data
+    # def get_details(self, color_variant):
+    #     product_details_objs = ProductVariantDetail.objects.filter(product_variant_id=color_variant.id)
+    #     return ProductVariantDetailSerializer(product_details_objs, many=True).data
 
     def get_color(self, product_variant):
         color = Color.objects.get(id=product_variant.color.pk)
         return color.name
+
+    def get_colors(self, product_variant):
+        color_variants = ProductVariant.objects.filter(parent_product_id=product_variant.parent_product.id)
+        colors = []
+        for cv in color_variants:
+            colors.append(cv.color.name)
+        return colors
+
+    def get_brand(self, product_variant):
+        parent_product = Product.objects.get(id=product_variant.parent_product.id)
+        return BrandSerializer(parent_product.brand).data
+
+    def get_price(self, product_variant):
+        size_variants = ProductVariantDetail.objects.filter(product_variant_id=product_variant.id).order_by("price")
+        if size_variants.count() > 0:
+            return size_variants.first().price
+        return -1
+
+    def get_name(self, product_variant):
+        parent_product = Product.objects.get(id=product_variant.parent_product.id)
+        return parent_product.name
+
+
 
 
