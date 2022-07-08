@@ -43,21 +43,6 @@ class ColorSerializer(serializers.ModelSerializer):
         fields = ("name", )
 
 
-class ProductVariantDetailSerializer(serializers.ModelSerializer):
-    size = serializers.SerializerMethodField("get_size")
-
-    class Meta:
-        model = ProductVariantDetail
-        fields = (
-            "size",
-            "price",
-            "quantity",
-        )
-
-    def get_size(self, product_details):
-        return product_details.size.size
-
-
 class ColorVariantSerializer(serializers.ModelSerializer):
     brand = serializers.SerializerMethodField("get_brand")
     # product_details = serializers.SerializerMethodField("get_details")
@@ -110,5 +95,24 @@ class ColorVariantSerializer(serializers.ModelSerializer):
         return parent_product.name
 
 
+class SizeVariantSerializer(serializers.ModelSerializer):
+    size = serializers.SerializerMethodField("get_size")
+    image_url = serializers.SerializerMethodField("get_image_url")
+
+    class Meta:
+        model = ProductVariantDetail
+        fields = (
+            "id",
+            "size",
+            "price",
+            "quantity",
+            "image_url",
+        )
+
+    def get_size(self, size_variant):
+        return size_variant.size.size
+
+    def get_image_url(self, size_variant):
+        return size_variant.product_variant.image_url
 
 

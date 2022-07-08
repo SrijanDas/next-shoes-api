@@ -26,7 +26,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
 
 class ProductVariantDetailsAdmin(admin.ModelAdmin):
-    list_display = ("product_variant", "size", "price", "quantity", "date_added")
+    list_display = ("id", "product_variant", "size", "price", "quantity", "date_added")
     prepopulated_fields = {"slug": ("product_variant", "size")}
 
 

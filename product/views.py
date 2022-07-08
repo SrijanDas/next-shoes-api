@@ -60,13 +60,32 @@ def get_brand_list(request):
     return Response(serializer.data)
 
 
+class SizeVariant(APIView):
+    def get_object(self, slug):
+        try:
+            size_variant = ProductVariantDetail.objects.get(slug=slug)
+            return size_variant
+        except Exception:
+            raise Http404
+
+    def get(self, request, slug):
+        size_variant = self.get_object(slug)
+        serializer = SizeVariantSerializer(size_variant)
+        return Response(serializer.data)
+
+
 @api_view(['Get'])
-def get_price(request, slug):
+def get_image(request, slug):
     try:
-        if len(slug) > 0:
-            product_variant_details = ProductVariantDetail.objects.get(slug=slug)
-            return Response({"price": product_variant_details.price})
+        color_variant = ProductVariant.objects.get(slug=slug)
+        # print(color_variant.image_url)
+        return Response({"image_url": color_variant.image_url})
+        pass
     except Exception:
         raise Http404
+
+
+
+
 
 
