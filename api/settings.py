@@ -14,12 +14,12 @@ RAZOR_KEY_SECRET = os.getenv("RAZOR_KEY_SECRET")
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-uqh-#t9g$5tix*4ty=!=03+!x)1aatb9_q^&%pazqz%rkrt!fx'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["vkart.herokuapp.com", "127.0.0.1", "localhost:8000"]
+ALLOWED_HOSTS = [os.getenv("HOST_NAME"), "127.0.0.1", "localhost:8000"]
 
 
 # Application definition
