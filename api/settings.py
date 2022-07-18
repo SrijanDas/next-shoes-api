@@ -1,10 +1,15 @@
 import os.path
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv()  # take environment variables from .env.
 
-
+RAZOR_KEY_ID = os.getenv("RAZOR_KEY_ID")
+RAZOR_KEY_SECRET = os.getenv("RAZOR_KEY_SECRET")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -35,7 +40,7 @@ INSTALLED_APPS = [
 
     # apps
     'product',
-    # 'order',
+    'order',
 
 ]
 

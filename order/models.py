@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from product.models import Product
+from product.models import ProductVariantDetail as Product
 
 ORDER_STATUS = [
     ('YTD', 'Yet to dispatch'),
@@ -12,16 +12,18 @@ ORDER_STATUS = [
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE, null=True, blank=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
     address = models.CharField(max_length=100)
     zipcode = models.CharField(max_length=100)
-    place = models.CharField(max_length=100)
-    phone = models.CharField(max_length=100)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    paid_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    sub_total = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    packaging_fees = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 
     order_status = models.CharField(max_length=3,
                                     choices=ORDER_STATUS,

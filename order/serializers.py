@@ -55,9 +55,13 @@ class OrderSerializer(serializers.ModelSerializer):
             "email",
             "address",
             "zipcode",
-            "place",
+            "city",
+            "state",
             "phone",
             "items",
+            "sub_total",
+            "packaging_fees",
+            "user",
 
         )
 
