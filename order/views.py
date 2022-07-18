@@ -38,7 +38,7 @@ def checkout(request):
 
             # Razorpay
             # Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
-            amount = (int(sub_total) + packaging_fees) * 100  #
+            amount = int(sub_total + packaging_fees) * 100
 
             # Create a Razorpay Order
             razorpay_order = razorpay_client.order.create(dict(amount=amount,
@@ -47,7 +47,6 @@ def checkout(request):
 
             # order id of newly created order.
             razorpay_order_id = razorpay_order['id']
-
             # we need to pass these details to frontend.
             context = {"status": True,
                        'razorpay_order_id': razorpay_order_id,
