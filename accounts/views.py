@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 from django.http import Http404
 from .models import Address
 from .serializers import AddressSerializer
@@ -20,9 +21,13 @@ class AddressController(APIView):
 
     def post(self, request):
         serializer = AddressSerializer(data=request.data)
-        print(request.data)
-        print(request.user)
-        return Response("Post request Address")
+        try:
+            if serializer.is_valid():
+                serializer.save(user=request.user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print("--------Error adding address :", e)
+            return Response({}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request):
         addresses = self.get_object(request.user)

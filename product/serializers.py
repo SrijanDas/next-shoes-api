@@ -71,13 +71,13 @@ class ColorVariantSerializer(serializers.ModelSerializer):
 
     def get_color(self, product_variant):
         color = Color.objects.get(id=product_variant.color.pk)
-        return color.name
+        return color.slug
 
     def get_colors(self, product_variant):
         color_variants = ProductVariant.objects.filter(parent_product_id=product_variant.parent_product.id)
         colors = []
         for cv in color_variants:
-            colors.append(cv.color.name)
+            colors.append(cv.color.slug)
         return colors
 
     def get_brand(self, product_variant):

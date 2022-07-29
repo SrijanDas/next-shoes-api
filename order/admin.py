@@ -4,7 +4,7 @@ from .models import Order, OrderItem, CancelledOrder
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('first_name', "order_status")
+    list_display = ('user', "order_status")
 
 
 admin.site.register(Order, OrderAdmin)

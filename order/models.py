@@ -1,4 +1,4 @@
-from accounts.models import Account as User
+from accounts.models import Account as User, Address
 from django.db import models
 
 from product.models import ProductVariantDetail as Product
@@ -12,15 +12,8 @@ ORDER_STATUS = [
 
 
 class Order(models.Model):
-    user = models.ForeignKey(User, related_name='orders', on_delete=models.CASCADE, null=True, blank=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
-    zipcode = models.CharField(max_length=100)
-    city = models.CharField(max_length=100, blank=True, null=True)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    phone = models.CharField(max_length=100, blank=True, null=True)
+    user = models.ForeignKey(User, related_name='orders', on_delete=models.SET_NULL, null=True, blank=True)
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     sub_total = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     packaging_fees = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)

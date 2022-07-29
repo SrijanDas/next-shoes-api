@@ -21,8 +21,8 @@ packaging_fees_per_item = 29
 
 
 @api_view(['POST'])
-# @authentication_classes([authentication.TokenAuthentication])
-# @permission_classes([permissions.IsAuthenticated])
+@authentication_classes([authentication.TokenAuthentication])
+@permission_classes([permissions.IsAuthenticated])
 def checkout(request):
     serializer = OrderSerializer(data=request.data)
 
@@ -34,7 +34,7 @@ def checkout(request):
                 packaging_fees += packaging_fees_per_item
                 sub_total += item.get('quantity') * item.get('product').price
 
-            serializer.save(sub_total=sub_total, packaging_fees=packaging_fees)
+            serializer.save(user=request.user, sub_total=sub_total, packaging_fees=packaging_fees)
 
             # Razorpay
             # Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise

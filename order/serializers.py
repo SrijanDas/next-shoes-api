@@ -2,7 +2,8 @@ from rest_framework import serializers
 
 from .models import Order, OrderItem
 
-from product.serializers import ProductSerializer
+from product.serializers import SizeVariantSerializer as ProductSerializer
+from accounts.serializers import AddressSerializer
 
 
 class MyOrderItemSerializer(serializers.ModelSerializer):
@@ -18,19 +19,7 @@ class MyOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = (
-            "id",
-            "first_name",
-            "last_name",
-            "email",
-            "address",
-            "zipcode",
-            "place",
-            "phone",
-            "items",
-            "paid_amount",
-            "order_status"
-        )
+        fields = "__all__"
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -48,22 +37,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = (
-            "id",
-            "first_name",
-            "last_name",
-            "email",
-            "address",
-            "zipcode",
-            "city",
-            "state",
-            "phone",
-            "items",
-            "sub_total",
-            "packaging_fees",
-            "user",
-
-        )
+        fields = "__all__"
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
