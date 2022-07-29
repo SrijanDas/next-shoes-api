@@ -17,7 +17,7 @@ RAZOR_KEY_SECRET = os.getenv("RAZOR_KEY_SECRET")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [".herokuapp.com", "127.0.0.1", "localhost:8000"]
 
@@ -121,6 +121,25 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    # 'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+    # 'SEND_CONFIRMATION_EMAIL': True,
+    'SET_PASSWORD_RETYPE': True,
+    'SET_USERNAME_RETYPE': True,
+
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+
+
+    'SERIALIZERS': {
+        'user_create': 'accounts.serializers.UserCreationSerializer',
+        'user': 'accounts.serializers.UserCreationSerializer',
+        'current_user': 'accounts.serializers.UserCreationSerializer',
+        'user_delete': 'djoser.serializers.UserDeleteSerializer',
+    },
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -152,3 +171,4 @@ MEDIA_ROOT = BASE_DIR / 'media/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'accounts.Account'

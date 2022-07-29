@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from accounts.models import Account as User
 from django.db import models
 
 from product.models import ProductVariantDetail as Product
