@@ -1,7 +1,3 @@
-from django.contrib.auth.models import User
-from django.http import Http404
-from django.shortcuts import render
-
 import razorpay
 from django.conf import settings
 from rest_framework import status, authentication, permissions
@@ -10,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from .models import Order, CancelledOrder
-from .serializers import OrderSerializer, MyOrderSerializer
+from .serializers import *
 
 # authorize razorpay client with API Keys.
 razorpay_client = razorpay.Client(
@@ -34,24 +30,33 @@ def checkout(request):
                 packaging_fees += packaging_fees_per_item
                 sub_total += item.get('quantity') * item.get('product').price
 
-            serializer.save(user=request.user, sub_total=sub_total, packaging_fees=packaging_fees)
-
             # Razorpay
+            total_amount = packaging_fees + sub_total
             # Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
-            amount = int(sub_total + packaging_fees) * 100
+            razorpay_amount = int(total_amount) * 100
 
             # Create a Razorpay Order
-            razorpay_order = razorpay_client.order.create(dict(amount=amount,
+            razorpay_order = razorpay_client.order.create(dict(amount=razorpay_amount,
                                                                currency=currency,
                                                                payment_capture=1))
 
-            # order id of newly created order.
+            # razorpay order id of newly created order.
             razorpay_order_id = razorpay_order['id']
+
+            # saving the order
+            serializer.save(user=request.user,
+                            sub_total=sub_total,
+                            packaging_fees=packaging_fees,
+                            total_amount=total_amount,
+                            razorpay_order_id=razorpay_order_id)
+
             # we need to pass these details to frontend.
             context = {"status": True,
-                       'razorpay_order_id': razorpay_order_id,
-                       'razorpay_amount': str(amount),
-                       'currency': currency,
+                       "razorpay_details": {
+                           'razorpay_order_id': razorpay_order_id,
+                           'razorpay_amount': str(razorpay_amount),
+                           'currency': currency,
+                       },
                        "order_details": serializer.data
                        }
 
@@ -68,9 +73,21 @@ class OrdersList(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        orders = Order.objects.filter(user=request.user)
+        orders = Order.objects.filter(user=request.user).order_by("-delivery_date")
         serializer = MyOrderSerializer(orders, many=True)
         return Response(serializer.data)
+
+
+@api_view(['GET'])
+# @authentication_classes([authentication.TokenAuthentication])
+# @permission_classes([permissions.IsAuthenticated])
+def get_order(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+        serializer = OrderPageSerializer(order, many=False)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+    except Exception:
+        return Response(status=status.HTTP_404_NOT_FOUND, data={"Something went wrong!"})
 
 
 @api_view(['POST'])

@@ -4,6 +4,7 @@ from .models import Order, OrderItem
 
 from product.serializers import SizeVariantSerializer as ProductSerializer
 from accounts.serializers import AddressSerializer
+from accounts.models import Address
 
 
 class MyOrderItemSerializer(serializers.ModelSerializer):
@@ -19,7 +20,7 @@ class MyOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = "__all__"
+        fields = ("id", "total_amount", "delivery_date", "items", "order_status",)
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -47,3 +48,17 @@ class OrderSerializer(serializers.ModelSerializer):
             OrderItem.objects.create(order=order, **item_data)
 
         return order
+
+
+class OrderPageSerializer(serializers.ModelSerializer):
+    items = MyOrderItemSerializer(many=True)
+    address = serializers.SerializerMethodField("get_address")
+
+    class Meta:
+        model = Order
+        fields = ("id", "total_amount", "delivery_date", "items", "order_status", "address",)
+
+    def get_address(self, order):
+        address = Address.objects.get(id=order.address.id)
+        serializer = AddressSerializer(address, many=False)
+        return serializer.data
