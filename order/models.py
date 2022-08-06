@@ -2,7 +2,7 @@ from accounts.models import Account as User, Address
 from django.db import models
 from datetime import datetime, timedelta
 
-from product.models import ProductVariantDetail as Product
+from product.models import Product
 
 ORDER_STATUS = [
     ('YTD', 'Yet to dispatch'),

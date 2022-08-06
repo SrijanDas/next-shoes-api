@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from .models import Order, OrderItem
 
-from product.serializers import SizeVariantSerializer as ProductSerializer
+from product.serializers import ProductSerializer
 from accounts.serializers import AddressSerializer
 from accounts.models import Address
 

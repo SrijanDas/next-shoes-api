@@ -2,6 +2,7 @@ import os.path
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -49,10 +50,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-# CORS Config
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = False
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -70,6 +67,13 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'api.urls'
+
+# CORS Config
+# CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    "https://nfootwear.vercel.app",
+    "http://localhost:3000",
+]
 
 TEMPLATES = [
     {
@@ -94,8 +98,12 @@ WSGI_APPLICATION = 'api.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'next_footwear' if DEBUG else os.getenv('PG_NAME'),
+        'USER': 'postgres' if DEBUG else os.getenv('PG_USER'),
+        'PASSWORD': os.getenv('PG_LOCAL_PASSWORD') if DEBUG else os.getenv('PG_PASSWORD'),
+        'HOST': 'localhost' if DEBUG else os.getenv('PG_HOST'),
+        'PORT': '5432',
     }
 }
 

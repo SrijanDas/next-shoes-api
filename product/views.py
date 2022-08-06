@@ -10,15 +10,15 @@ from .serializers import *
 # Create your views here.
 class LatestProductsList(APIView):
     def get(self, request):
-        products = ProductVariant.objects.filter(main_variant=True).order_by("date_added")[:10]
-        serializer = ColorVariantSerializer(products, many=True)
+        color_variants = ColorVariant.objects.filter(main_variant=True).order_by("date_added")[:10]
+        serializer = LatestProductsSerializer(color_variants, many=True)
         return Response(serializer.data)
 
 
 class ProductDetail(APIView):
     def get_object(self, product_slug):
         try:
-            return ProductVariant.objects.get(slug=product_slug)
+            return ColorVariant.objects.get(slug=product_slug)
         except Exception:
             raise Http404
 
@@ -46,8 +46,8 @@ def search(request):
     query = request.data.get('query', '')
 
     if query:
-        products = Product.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
-        serializer = ProductSerializer(products, many=True)
+        products = ParentProduct.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
+        serializer = ParentProductSerializer(products, many=True)
         return Response(serializer.data)
     else:
         return Response({"products": []})
@@ -63,21 +63,21 @@ def get_brand_list(request):
 class SizeVariant(APIView):
     def get_object(self, slug):
         try:
-            size_variant = ProductVariantDetail.objects.get(slug=slug)
+            size_variant = Product.objects.get(slug=slug)
             return size_variant
         except Exception:
             raise Http404
 
     def get(self, request, slug):
         size_variant = self.get_object(slug)
-        serializer = SizeVariantSerializer(size_variant)
+        serializer = ProductSerializer(size_variant)
         return Response(serializer.data)
 
 
 @api_view(['Get'])
 def get_image(request, slug):
     try:
-        color_variant = ProductVariant.objects.get(slug=slug)
+        color_variant = ColorVariant.objects.get(slug=slug)
         # print(color_variant.image_url)
         return Response({"image_url": color_variant.image_url})
         pass

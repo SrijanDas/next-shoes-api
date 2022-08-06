@@ -34,20 +34,20 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Product',
+            name='ParentProduct',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(blank=True, max_length=255, null=True)),
                 ('slug', models.SlugField(blank=True, null=True)),
                 ('date_added', models.DateTimeField(auto_now_add=True)),
-                ('brand', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='products', to='product.brand')),
+                ('brand', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='products', to='product.brand')),
             ],
             options={
                 'ordering': ('-date_added',),
             },
         ),
         migrations.CreateModel(
-            name='ProductVariant',
+            name='ColorVariant',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('image_url', models.CharField(blank=True, max_length=500, null=True)),
@@ -55,7 +55,7 @@ class Migration(migrations.Migration):
                 ('main_variant', models.BooleanField(default=False)),
                 ('date_added', models.DateTimeField(auto_now_add=True, null=True)),
                 ('color', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='product.color')),
-                ('parent_product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='product.product')),
+                ('parent_product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='product.parentproduct')),
             ],
         ),
         migrations.CreateModel(
@@ -67,14 +67,14 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='ProductVariantDetail',
+            name='Product',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('price', models.DecimalField(decimal_places=2, max_digits=10, null=True)),
                 ('quantity', models.IntegerField(null=True)),
                 ('date_added', models.DateTimeField(auto_now_add=True)),
                 ('slug', models.SlugField(max_length=100)),
-                ('product_variant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='product.productvariant')),
+                ('color_variant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='product.colorVariant')),
                 ('size', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='product.size')),
             ],
         ),

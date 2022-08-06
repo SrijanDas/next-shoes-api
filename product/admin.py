@@ -16,25 +16,25 @@ class SizeAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("size",)}
 
 
-class ProductAdmin(admin.ModelAdmin):
+class ParentProductAdmin(admin.ModelAdmin):
     list_display = ("name", "brand", "date_added")
     prepopulated_fields = {"slug": ("name",)}
 
 
-class ProductVariantAdmin(admin.ModelAdmin):
+class ColorVariantAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("parent_product",)}
 
 
-class ProductVariantDetailsAdmin(admin.ModelAdmin):
-    list_display = ("id", "product_variant", "size", "price", "quantity", "date_added")
-    prepopulated_fields = {"slug": ("product_variant", "size")}
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ("id", "color_variant", "size", "price", "quantity", "date_added")
+    prepopulated_fields = {"slug": ("color_variant", "size")}
 
 
 admin.site.register(Brand, BrandAdmin)
-admin.site.register(Product, ProductAdmin)
 admin.site.register(Color, ColorAdmin)
 admin.site.register(Size, SizeAdmin)
-admin.site.register(ProductVariant, ProductVariantAdmin)
-admin.site.register(ProductVariantDetail, ProductVariantDetailsAdmin)
+admin.site.register(ParentProduct, ParentProductAdmin)
+admin.site.register(ColorVariant, ColorVariantAdmin)
+admin.site.register(Product, ProductAdmin)
 
 
