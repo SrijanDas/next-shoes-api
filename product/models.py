@@ -107,7 +107,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     quantity = models.IntegerField(null=True)
     date_added = models.DateTimeField(auto_now_add=True)
-    slug = models.SlugField(max_length=100)
+    slug = models.SlugField(max_length=255, unique=True)
 
     # class Meta:
     #     verbose_name_plural = "product details"

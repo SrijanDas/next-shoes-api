@@ -5,13 +5,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import *
+from .models import *
 
 
 # Create your views here.
 class LatestProductsList(APIView):
     def get(self, request):
         color_variants = ColorVariant.objects.filter(main_variant=True).order_by("date_added")[:10]
-        serializer = LatestProductsSerializer(color_variants, many=True)
+        serializer = ProductCardSerializer(color_variants, many=True)
         return Response(serializer.data)
 
 
@@ -24,7 +25,7 @@ class ProductDetail(APIView):
 
     def get(self, request, product_slug):
         color_variant = self.get_object(product_slug)
-        serializer = ColorVariantSerializer(color_variant)
+        serializer = ProductPageSerializer(color_variant)
         return Response(serializer.data)
 
 
@@ -41,16 +42,19 @@ class BrandDetail(APIView):
         return Response(serializer.data)
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def search(request):
-    query = request.data.get('query', '')
-
+    query = request.query_params.get('q', '')
+    query = str(query).replace(' ', '-')
     if query:
-        products = ParentProduct.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
-        serializer = ParentProductSerializer(products, many=True)
+        color_variants = ColorVariant.objects.filter(
+            Q(slug__icontains=query)
+            | Q(parent_product__brand__slug__icontains=query)
+        )
+        serializer = ProductCardSerializer(color_variants, many=True)
         return Response(serializer.data)
-    else:
-        return Response({"products": []})
+
+    return Response({"products": []})
 
 
 @api_view(['Get'])
@@ -60,7 +64,7 @@ def get_brand_list(request):
     return Response(serializer.data)
 
 
-class SizeVariant(APIView):
+class ProductVariantDetail(APIView):
     def get_object(self, slug):
         try:
             size_variant = Product.objects.get(slug=slug)
@@ -83,9 +87,3 @@ def get_image(request, slug):
         pass
     except Exception:
         raise Http404
-
-
-
-
-
-

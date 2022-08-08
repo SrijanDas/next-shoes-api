@@ -28,7 +28,7 @@ class BrandListSerializer(serializers.ModelSerializer):
 class ColorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Color
-        fields = ("name",)
+        fields = ("name", "slug")
 
 
 class ParentProductSerializer(serializers.ModelSerializer):
@@ -43,10 +43,14 @@ class ParentProductSerializer(serializers.ModelSerializer):
         )
 
 
-class LatestProductsSerializer(serializers.ModelSerializer):
+class ProductCardSerializer(serializers.ModelSerializer):
+    """
+    1. this serializer is for product cards
+    2. it takes in color variant model
+    """
     brand = serializers.SerializerMethodField("get_brand")
     color = serializers.SerializerMethodField("get_color")
-    available_colors = serializers.SerializerMethodField("get_colors")
+    available_colors = serializers.SerializerMethodField("get_available_colors")
     starting_price = serializers.SerializerMethodField("get_price")
     name = serializers.SerializerMethodField("get_name")
 
@@ -67,7 +71,7 @@ class LatestProductsSerializer(serializers.ModelSerializer):
         color = Color.objects.get(id=color_variant.color.pk)
         return color.slug
 
-    def get_colors(self, color_variant):
+    def get_available_colors(self, color_variant):
         color_variants = ColorVariant.objects.filter(parent_product_id=color_variant.parent_product.id)
         colors = []
         for cv in color_variants:
@@ -89,10 +93,14 @@ class LatestProductsSerializer(serializers.ModelSerializer):
         return parent_product.name
 
 
-class ColorVariantSerializer(serializers.ModelSerializer):
+class ProductPageSerializer(serializers.ModelSerializer):
+    """
+    # this serializer is for products page
+    # takes in color variant slug
+    """
     brand = serializers.SerializerMethodField("get_brand")
     color = serializers.SerializerMethodField("get_color")
-    available_colors = serializers.SerializerMethodField("get_colors")
+    available_colors = serializers.SerializerMethodField("get_available_colors")
     starting_price = serializers.SerializerMethodField("get_price")
     name = serializers.SerializerMethodField("get_name")
 
@@ -109,29 +117,36 @@ class ColorVariantSerializer(serializers.ModelSerializer):
             "starting_price",
         )
 
-    def get_color(self, product_variant):
-        color = Color.objects.get(id=product_variant.color.pk)
+    def get_color(self, color_variant):
+        color = Color.objects.get(id=color_variant.color.pk)
         return color.slug
 
-    def get_colors(self, product_variant):
-        color_variants = ColorVariant.objects.filter(parent_product_id=product_variant.parent_product.id)
-        colors = []
+    def get_available_colors(self, color_variant):
+        color_variants = ColorVariant.objects.filter(parent_product_id=color_variant.parent_product.id)
+        available_colors = []
         for cv in color_variants:
-            colors.append(cv.color.slug)
-        return colors
+            available_colors.append(
+                {
+                    'color': cv.color.name,
+                    'color_slug': cv.color.slug,
+                    'slug': cv.slug,
+                    'image_url': cv.image_url,
+                }
+            )
+        return available_colors
 
-    def get_brand(self, product_variant):
-        parent_product = ParentProduct.objects.get(id=product_variant.parent_product.id)
+    def get_brand(self, color_variant):
+        parent_product = ParentProduct.objects.get(id=color_variant.parent_product.id)
         return BrandSerializer(parent_product.brand).data
 
-    def get_price(self, product_variant):
-        size_variants = Product.objects.filter(product_variant_id=product_variant.id).order_by("price")
-        if size_variants.count() > 0:
-            return size_variants.first().price
+    def get_price(self, color_variant):
+        product = Product.objects.filter(color_variant_id=color_variant.id).order_by("price")
+        if product.count() > 0:
+            return product.first().price
         return -1
 
-    def get_name(self, product_variant):
-        parent_product = ParentProduct.objects.get(id=product_variant.parent_product.id)
+    def get_name(self, color_variant):
+        parent_product = ParentProduct.objects.get(id=color_variant.parent_product.id)
         return parent_product.name
 
 
@@ -155,7 +170,7 @@ class ProductSerializer(serializers.ModelSerializer):
         )
 
     def get_color(self, product):
-        return product.color_variant.color.name
+        return ColorSerializer(product.color_variant.color).data
 
     def get_size(self, size_variant):
         return size_variant.size.size
