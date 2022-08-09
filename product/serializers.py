@@ -31,6 +31,12 @@ class ColorSerializer(serializers.ModelSerializer):
         fields = ("name", "slug")
 
 
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ("image_url", "id")
+
+
 class ParentProductSerializer(serializers.ModelSerializer):
     brand = BrandNameSerializer(many=False)
 
@@ -103,6 +109,7 @@ class ProductPageSerializer(serializers.ModelSerializer):
     available_colors = serializers.SerializerMethodField("get_available_colors")
     starting_price = serializers.SerializerMethodField("get_price")
     name = serializers.SerializerMethodField("get_name")
+    images = serializers.SerializerMethodField("get_images")
 
     class Meta:
         model = ColorVariant
@@ -110,12 +117,17 @@ class ProductPageSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "image_url",
+            "images",
             "slug",
             "brand",
             "color",
             "available_colors",
             "starting_price",
         )
+
+    def get_images(self, color_variant):
+        images = ProductImage.objects.filter(color_variant=color_variant)
+        return ImageSerializer(images, many=True).data
 
     def get_color(self, color_variant):
         color = Color.objects.get(id=color_variant.color.pk)

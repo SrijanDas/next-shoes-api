@@ -100,6 +100,15 @@ class ColorVariant(models.Model):
         return super().save(*args, **kwargs)
 
 
+# storing all the product images
+class ProductImage(models.Model):
+    color_variant = models.ForeignKey(ColorVariant, on_delete=models.CASCADE)
+    image_url = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.color_variant.__str__()
+
+
 # stores different "sizes", "price", "quantity" for different color variants
 class Product(models.Model):
     color_variant = models.ForeignKey(ColorVariant, on_delete=models.CASCADE)

@@ -82,8 +82,12 @@ class ProductVariantDetail(APIView):
 def get_image(request, slug):
     try:
         color_variant = ColorVariant.objects.get(slug=slug)
-        # print(color_variant.image_url)
-        return Response({"image_url": color_variant.image_url})
+        images = ProductImage.objects.filter(color_variant=color_variant)
+        context = {
+            "image_url": color_variant.image_url,
+            "images": ImageSerializer(images, many=True).data
+        }
+        return Response(context)
         pass
     except Exception:
         raise Http404
