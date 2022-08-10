@@ -12,11 +12,7 @@ class BrandNameSerializer(serializers.ModelSerializer):
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
-        fields = (
-            "id",
-            "name",
-            "logo_url",
-        )
+        fields = "__all__"
 
 
 class BrandListSerializer(serializers.ModelSerializer):
@@ -71,6 +67,7 @@ class ProductCardSerializer(serializers.ModelSerializer):
             "color",
             "available_colors",
             "starting_price",
+            "date_added",
         )
 
     def get_color(self, color_variant):

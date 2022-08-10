@@ -59,8 +59,8 @@ def search(request):
 
 @api_view(['Get'])
 def get_brand_list(request):
-    categories = Brand.objects.all()
-    serializer = BrandListSerializer(categories, many=True)
+    brands = Brand.objects.all()
+    serializer = BrandListSerializer(brands, many=True)
     return Response(serializer.data)
 
 
