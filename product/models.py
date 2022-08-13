@@ -1,12 +1,7 @@
 import datetime
 
 from django.db import models
-from io import BytesIO
-from PIL import Image
-from django.core.files import File
-
 from django.utils.text import slugify
-
 
 # Create your models here.
 
@@ -63,9 +58,6 @@ class ParentProduct(models.Model):
     brand = models.ForeignKey(Brand, related_name="products", on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     slug = models.SlugField(blank=True, null=True)
-    # description = models.TextField(blank=True, null=True)
-    # thumbnail = models.ImageField(
-    #     upload_to='uploads/thumbnail/', blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
 
     class Meta:

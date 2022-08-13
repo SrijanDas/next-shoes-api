@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import *
+from reviews.models import Review
 
 
 class BrandNameSerializer(serializers.ModelSerializer):
@@ -55,6 +56,7 @@ class ProductCardSerializer(serializers.ModelSerializer):
     available_colors = serializers.SerializerMethodField("get_available_colors")
     starting_price = serializers.SerializerMethodField("get_price")
     name = serializers.SerializerMethodField("get_name")
+    rating = serializers.SerializerMethodField("get_rating")
 
     class Meta:
         model = ColorVariant
@@ -68,7 +70,21 @@ class ProductCardSerializer(serializers.ModelSerializer):
             "available_colors",
             "starting_price",
             "date_added",
+            "rating",
         )
+
+    def get_rating(self, color_variant):
+        context = {
+            'rating': 0,
+            'review_count': 0
+        }
+        ratings = Review.objects.filter(product=color_variant.parent_product)
+        if ratings.count() > 0:
+            rating = sum([r.rating for r in ratings]) / ratings.count()
+            context['rating'] = rating
+            context['review_count'] = ratings.count()
+
+        return context
 
     def get_color(self, color_variant):
         color = Color.objects.get(id=color_variant.color.pk)
@@ -76,10 +92,7 @@ class ProductCardSerializer(serializers.ModelSerializer):
 
     def get_available_colors(self, color_variant):
         color_variants = ColorVariant.objects.filter(parent_product_id=color_variant.parent_product.id)
-        colors = []
-        for cv in color_variants:
-            colors.append(cv.color.slug)
-        return colors
+        return [cv.color.slug for cv in color_variants]
 
     def get_brand(self, color_variant):
         parent_product = ParentProduct.objects.get(id=color_variant.parent_product.id)
@@ -107,6 +120,7 @@ class ProductPageSerializer(serializers.ModelSerializer):
     starting_price = serializers.SerializerMethodField("get_price")
     name = serializers.SerializerMethodField("get_name")
     images = serializers.SerializerMethodField("get_images")
+    rating = serializers.SerializerMethodField("get_rating")
 
     class Meta:
         model = ColorVariant
@@ -120,7 +134,21 @@ class ProductPageSerializer(serializers.ModelSerializer):
             "color",
             "available_colors",
             "starting_price",
+            "rating",
         )
+
+    def get_rating(self, color_variant):
+        context = {
+            'rating': 0,
+            'review_count': 0
+        }
+        ratings = Review.objects.filter(product=color_variant.parent_product)
+        if ratings.count() > 0:
+            rating = sum([r.rating for r in ratings]) / ratings.count()
+            context['rating'] = rating
+            context['review_count'] = ratings.count()
+
+        return context
 
     def get_images(self, color_variant):
         images = ProductImage.objects.filter(color_variant=color_variant)

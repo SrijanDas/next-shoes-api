@@ -17,11 +17,11 @@ class SizeAdmin(admin.ModelAdmin):
 
 
 class ParentProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "brand", "date_added")
     prepopulated_fields = {"slug": ("name",)}
 
 
 class ColorVariantAdmin(admin.ModelAdmin):
+    list_display = ("id", "parent_product", "color", "main_variant",)
     prepopulated_fields = {"slug": ("parent_product",)}
 
 

@@ -1,10 +1,10 @@
-from django.urls import path, include
+from django.urls import path
 
 from . import views
 
 urlpatterns = [
     path('products/latest-products/', views.LatestProductsList.as_view()),
-    path('', views.search),
+    path('products/', views.search),
     path('products/<slug:product_slug>/', views.ProductDetail.as_view()),
     # path('products/<slug:brand_slug>/', views.BrandDetail.as_view()),
     path('brand-list/', views.get_brand_list),
