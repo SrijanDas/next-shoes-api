@@ -23,10 +23,10 @@ class Order(models.Model):
     order_status = models.CharField(max_length=3,
                                     choices=ORDER_STATUS,
                                     default="YTD")
-
+    razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)
+    dispatched_on = models.DateField(null=True, blank=True)
     delivery_date = models.DateTimeField(null=True, blank=True)
     payment_done = models.BooleanField(default=False)
-    razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         ordering = ['-created_at', ]
@@ -51,7 +51,7 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(default=1)
 
     def __str__(self):
-        return '%s' % self.id
+        return '%s' % self.order
 
 
 class CancelledOrder(models.Model):

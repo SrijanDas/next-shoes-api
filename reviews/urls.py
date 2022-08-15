@@ -5,5 +5,6 @@ from . import views
 urlpatterns = [
     # path('get-reviews/<int:product_id>/', views.get_reviews),
     path('reviews/', views.get_reviews),
+    path('review', views.ReviewView.as_view())
 
 ]

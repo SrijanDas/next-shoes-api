@@ -5,14 +5,24 @@ from .models import Order, OrderItem
 from product.serializers import ProductSerializer
 from accounts.serializers import AddressSerializer
 from accounts.models import Address
+from reviews.models import Review
+from reviews.serializers import ReviewSerializer
 
 
 class MyOrderItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer()
+    review = serializers.SerializerMethodField("get_review")
 
     class Meta:
         model = OrderItem
-        fields = "__all__"
+        fields = ("id", "product", "price", "quantity", "review")
+
+    def get_review(self, order_item):
+        try:
+            review = Review.objects.get(order_item=order_item)
+            return ReviewSerializer(review).data
+        except Exception:
+            return False
 
 
 class MyOrderSerializer(serializers.ModelSerializer):
@@ -30,6 +40,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
             "price",
             "product",
             "quantity",
+
         )
 
 

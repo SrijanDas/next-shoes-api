@@ -14,3 +14,10 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_username(self, review):
         user = User.objects.get(pk=review.user.pk)
         return f"{str(user.first_name).capitalize()} {str(user.last_name).capitalize()}"
+
+
+class NewReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Review
+        fields = "__all__"

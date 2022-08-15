@@ -81,7 +81,7 @@ class ProductCardSerializer(serializers.ModelSerializer):
         ratings = Review.objects.filter(product=color_variant.parent_product)
         if ratings.count() > 0:
             rating = sum([r.rating for r in ratings]) / ratings.count()
-            context['rating'] = rating
+            context['rating'] = round(rating, 1)
             context['review_count'] = ratings.count()
 
         return context
@@ -145,7 +145,7 @@ class ProductPageSerializer(serializers.ModelSerializer):
         ratings = Review.objects.filter(product=color_variant.parent_product)
         if ratings.count() > 0:
             rating = sum([r.rating for r in ratings]) / ratings.count()
-            context['rating'] = rating
+            context['rating'] = round(rating, 1)
             context['review_count'] = ratings.count()
 
         return context
