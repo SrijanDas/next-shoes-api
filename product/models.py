@@ -76,7 +76,7 @@ class ParentProduct(models.Model):
 
 
 # stores different color variants for one single parent product
-class ColorVariant(models.Model):
+class ProductColorVariant(models.Model):
     parent_product = models.ForeignKey(ParentProduct, on_delete=models.CASCADE)
     color = models.ForeignKey(Color, on_delete=models.SET_NULL, null=True)
     image_url = models.CharField(max_length=500, blank=True, null=True)
@@ -94,7 +94,7 @@ class ColorVariant(models.Model):
 
 # storing all the product images
 class ProductImage(models.Model):
-    color_variant = models.ForeignKey(ColorVariant, on_delete=models.CASCADE)
+    color_variant = models.ForeignKey(ProductColorVariant, on_delete=models.CASCADE)
     image_url = models.CharField(max_length=255)
 
     def __str__(self):
@@ -103,7 +103,7 @@ class ProductImage(models.Model):
 
 # stores different "sizes", "price", "quantity" for different color variants
 class Product(models.Model):
-    color_variant = models.ForeignKey(ColorVariant, on_delete=models.CASCADE)
+    color_variant = models.ForeignKey(ProductColorVariant, on_delete=models.CASCADE)
     size = models.ForeignKey(Size, on_delete=models.SET_NULL, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     quantity = models.IntegerField(null=True)

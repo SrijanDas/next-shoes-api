@@ -57,14 +57,16 @@ class ProductCardSerializer(serializers.ModelSerializer):
     starting_price = serializers.SerializerMethodField("get_price")
     name = serializers.SerializerMethodField("get_name")
     rating = serializers.SerializerMethodField("get_rating")
+    parent_slug = serializers.SerializerMethodField("get_parent_slug")
 
     class Meta:
-        model = ColorVariant
+        model = ProductColorVariant
         fields = (
             "id",
             "name",
             "image_url",
             "slug",
+            "parent_slug",
             "brand",
             "color",
             "available_colors",
@@ -72,6 +74,9 @@ class ProductCardSerializer(serializers.ModelSerializer):
             "date_added",
             "rating",
         )
+
+    def get_parent_slug(self, color_variant):
+        return color_variant.parent_product.slug
 
     def get_rating(self, color_variant):
         context = {
@@ -87,16 +92,14 @@ class ProductCardSerializer(serializers.ModelSerializer):
         return context
 
     def get_color(self, color_variant):
-        color = Color.objects.get(id=color_variant.color.pk)
-        return color.slug
+        return color_variant.color.slug
 
     def get_available_colors(self, color_variant):
-        color_variants = ColorVariant.objects.filter(parent_product_id=color_variant.parent_product.id)
+        color_variants = ProductColorVariant.objects.filter(parent_product_id=color_variant.parent_product.id)
         return [cv.color.slug for cv in color_variants]
 
     def get_brand(self, color_variant):
-        parent_product = ParentProduct.objects.get(id=color_variant.parent_product.id)
-        return BrandSerializer(parent_product.brand).data
+        return BrandSerializer(color_variant.parent_product.brand).data
 
     def get_price(self, color_variant):
         product = Product.objects.filter(color_variant_id=color_variant.id).order_by("price")
@@ -105,8 +108,7 @@ class ProductCardSerializer(serializers.ModelSerializer):
         return -1
 
     def get_name(self, color_variant):
-        parent_product = ParentProduct.objects.get(id=color_variant.parent_product.id)
-        return parent_product.name
+        return color_variant.parent_product.name
 
 
 class ProductPageSerializer(serializers.ModelSerializer):
@@ -117,25 +119,45 @@ class ProductPageSerializer(serializers.ModelSerializer):
     brand = serializers.SerializerMethodField("get_brand")
     color = serializers.SerializerMethodField("get_color")
     available_colors = serializers.SerializerMethodField("get_available_colors")
+    available_products = serializers.SerializerMethodField("get_available_products")
     starting_price = serializers.SerializerMethodField("get_price")
     name = serializers.SerializerMethodField("get_name")
     images = serializers.SerializerMethodField("get_images")
     rating = serializers.SerializerMethodField("get_rating")
+    parent_slug = serializers.SerializerMethodField("get_parent_slug")
 
     class Meta:
-        model = ColorVariant
+        model = ProductColorVariant
         fields = (
             "id",
             "name",
             "image_url",
             "images",
             "slug",
+            "parent_slug",
             "brand",
             "color",
             "available_colors",
+            "available_products",
             "starting_price",
             "rating",
         )
+
+    def get_parent_slug(self, color_variant):
+        return color_variant.parent_product.slug
+
+    def get_available_products(self, color_variant):
+        available_products = {}
+        products = Product.objects.filter(color_variant=color_variant)
+
+        for product in products:
+            available_products[product.size.size] = {
+                    "id": product.pk,
+                    "price": product.price,
+                    "quantity": product.quantity
+                }
+
+        return available_products
 
     def get_rating(self, color_variant):
         context = {
@@ -159,7 +181,7 @@ class ProductPageSerializer(serializers.ModelSerializer):
         return color.slug
 
     def get_available_colors(self, color_variant):
-        color_variants = ColorVariant.objects.filter(parent_product_id=color_variant.parent_product.id)
+        color_variants = ProductColorVariant.objects.filter(parent_product_id=color_variant.parent_product.id)
         available_colors = []
         for cv in color_variants:
             available_colors.append(

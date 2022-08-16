@@ -1,10 +1,9 @@
-from django.shortcuts import render
 from rest_framework import authentication, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from .models import Review
-from product.models import ColorVariant, Product
+from product.models import ProductColorVariant, Product
 from .serializers import ReviewSerializer, NewReviewSerializer
 
 
@@ -47,7 +46,7 @@ class ReviewView(APIView):
 def get_reviews(request):
     try:
         color_variant_id = request.query_params.get('color_variant_id')
-        color_variant = ColorVariant.objects.get(pk=color_variant_id)
+        color_variant = ProductColorVariant.objects.get(pk=color_variant_id)
         reviews = Review.objects.filter(product_id=color_variant.parent_product.id, show_on_client_side=True)
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)

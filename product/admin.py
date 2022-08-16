@@ -34,7 +34,7 @@ admin.site.register(Brand, BrandAdmin)
 admin.site.register(Color, ColorAdmin)
 admin.site.register(Size, SizeAdmin)
 admin.site.register(ParentProduct, ParentProductAdmin)
-admin.site.register(ColorVariant, ColorVariantAdmin)
+admin.site.register(ProductColorVariant, ColorVariantAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductImage)
 
