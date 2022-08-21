@@ -10,6 +10,7 @@ load_dotenv()  # take environment variables from .env.
 
 RAZOR_KEY_ID = os.getenv("RAZOR_KEY_ID")
 RAZOR_KEY_SECRET = os.getenv("RAZOR_KEY_SECRET")
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -19,7 +20,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = [".herokuapp.com", "127.0.0.1", "localhost:8000"]
+ALLOWED_HOSTS = [".herokuapp.com", "127.0.0.1", "localhost", ".ngrok.io"]
 
 # Application definition
 

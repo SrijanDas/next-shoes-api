@@ -214,6 +214,7 @@ class ProductSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField("get_image_url")
     name = serializers.SerializerMethodField("get_product_name")
     color = serializers.SerializerMethodField("get_color")
+    slug = serializers.SerializerMethodField("get_parent_slug")
 
     class Meta:
         model = Product
@@ -227,6 +228,9 @@ class ProductSerializer(serializers.ModelSerializer):
             "color",
             "slug",
         )
+
+    def get_parent_slug(self, product):
+        return product.color_variant.parent_product.slug
 
     def get_color(self, product):
         return ColorSerializer(product.color_variant.color).data

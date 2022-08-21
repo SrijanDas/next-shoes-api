@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Order, OrderItem
+from .models import Order, OrderItem, Payment
 
 from product.serializers import ProductSerializer
 from accounts.serializers import AddressSerializer
@@ -15,7 +15,7 @@ class MyOrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ("id", "product", "price", "quantity", "review")
+        fields = ("id", "product", "price", "quantity", "review", "returned")
 
     def get_review(self, order_item):
         try:
@@ -67,9 +67,21 @@ class OrderPageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ("id", "total_amount", "delivery_date", "items", "order_status", "address",)
+        fields = ("id", "total_amount", "delivery_date", "items", "order_status", "address", "dispatched_on", "created_at")
 
     def get_address(self, order):
         address = Address.objects.get(id=order.address.id)
         serializer = AddressSerializer(address, many=False)
         return serializer.data
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = "__all__"
+
+    def create(self, validated_data):
+        validated_data['amount'] = validated_data['amount'] / 100
+        payment = Payment.objects.create(**validated_data)
+        return payment
+

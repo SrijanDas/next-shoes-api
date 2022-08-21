@@ -1,3 +1,5 @@
+import json
+
 import razorpay
 from django.conf import settings
 from rest_framework import status, authentication, permissions
@@ -5,8 +7,11 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404
-from .models import Order, CancelledOrder
+from .models import Order, CancelledOrder, Payment
 from .serializers import *
+import hmac
+import hashlib
+import base64
 
 # authorize razorpay client with API Keys.
 razorpay_client = razorpay.Client(
@@ -74,7 +79,7 @@ class OrdersList(APIView):
 
     def get_orders_for_user(self, user):
         try:
-            orders = Order.objects.filter(user=user).order_by("-delivery_date")
+            orders = Order.objects.filter(user=user, payment_done=True).order_by("-delivery_date")
             return orders
         except Exception:
             raise Http404
@@ -101,7 +106,7 @@ def get_order(request, order_id):
 @authentication_classes([authentication.TokenAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def cancel_order(request):
-    order_id = request.data['order_id']
+    order_id = request.data['itemId']
     reason = request.data['reason']
     order = Order.objects.get(pk=order_id)
     order.order_status = "CAN"
@@ -111,3 +116,39 @@ def cancel_order(request):
     cancelled_order.reason_for_cancellation = reason
     cancelled_order.save()
     return Response("Order Cancelled")
+
+
+@api_view(["POST"])
+def return_item(request):
+    try:
+        item_id = request.data['itemId']
+        order_item = OrderItem.objects.get(id=item_id)
+        order_item.returned = True
+        order_item.save()
+        return Response(status=status.HTTP_200_OK)
+    except Exception:
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def verify_payment(request):
+    try:
+        dig = hmac.new(key=bytes(settings.WEBHOOK_SECRET, 'utf-8'), msg=request.body,
+                       digestmod=hashlib.sha256).hexdigest()
+
+        payload = json.loads(request.body)['payload']
+        payment_data = payload["payment"]["entity"]
+        serializer = PaymentSerializer(data=payment_data)
+
+        if serializer.is_valid() and request.headers['X-Razorpay-Signature'] == dig:
+            # valid payment
+            # saving payment data to database
+
+            serializer.save(payment_data=payload, transaction_id=payment_data['id'],
+                            razorpay_order_id=payment_data['order_id'])
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)

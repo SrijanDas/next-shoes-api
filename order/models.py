@@ -1,8 +1,9 @@
 from accounts.models import Account as User, Address
 from django.db import models
 from datetime import datetime, timedelta
-
+from django.db.models.signals import pre_save, post_save
 from product.models import Product
+from .signals import *
 
 ORDER_STATUS = [
     ('YTD', 'Yet to dispatch'),
@@ -49,6 +50,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, related_name='items', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     quantity = models.IntegerField(default=1)
+    returned = models.BooleanField(default=False)
 
     def __str__(self):
         return '%s' % self.order
@@ -62,15 +64,20 @@ class CancelledOrder(models.Model):
         return '%s' % self.order
 
 
-# class Payment(models.Model):
-#     razorpay_payment_id = models.CharField(max_length=100)
-#     razorpay_order_id = models.CharField(max_length=100)
-#     razorpay_signature = models.CharField(max_length=255, null=True, blank=True)
-#     currency = models.CharField(max_length=5)
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-#     order = models.ForeignKey(Order, on_delete=models.CASCADE)
-#
-#     def __str__(self):
-#         return '%s' % self.razorpay_order_id
+class Payment(models.Model):
+    transaction_id = models.CharField(max_length=256, null=True, blank=True)
+    razorpay_order_id = models.CharField(max_length=256, null=True, blank=True)
+    amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    method = models.CharField(max_length=25, null=True, blank=True)
+    status = models.CharField(max_length=20, null=True, blank=True)
+    currency = models.CharField(max_length=4, null=True, blank=True)
+    payment_data = models.JSONField(null=True, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if self.status == "captured":
+            order = Order.objects.get(razorpay_order_id=self.razorpay_order_id)
+            order.payment_done = True
+            order.save()
+        return super().save(*args, **kwargs)
 
