@@ -15,7 +15,7 @@ class MyOrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ("id", "product", "price", "quantity", "review", "returned")
+        fields = ("id", "product", "price", "quantity", "review", "return_requested", "returned")
 
     def get_review(self, order_item):
         try:

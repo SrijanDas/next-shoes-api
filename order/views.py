@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404
-from .models import Order, CancelledOrder, Payment
+from .models import Order, CancelledOrder, ReturnItem, Payment
 from .serializers import *
 import hmac
 import hashlib
@@ -122,11 +122,35 @@ def cancel_order(request):
 def return_item(request):
     try:
         item_id = request.data['itemId']
-        order_item = OrderItem.objects.get(id=item_id)
-        order_item.returned = True
-        order_item.save()
+        reason = request.data['reason']
+
+        ReturnItem.objects.create(
+            order_item_id=item_id,
+            reason=reason
+        )
+        # order_item = OrderItem.objects.get(id=item_id)
+        # order_item.save(return_requested=True)
         return Response(status=status.HTTP_200_OK)
-    except Exception:
+    except Exception as e:
+        print(e)
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+def cancel_return(request):
+    try:
+        item_id = request.data['itemId']
+        order_item = OrderItem.objects.get(id=item_id)
+        order_item.return_requested = False
+        order_item.returned = False
+        order_item.save()
+
+        return_item_obj = ReturnItem.objects.get(order_item=order_item)
+        return_item_obj.delete()
+
+        return Response("cancelled return request", status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

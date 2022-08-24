@@ -9,5 +9,6 @@ urlpatterns = [
     path('verify-payment/', views.verify_payment),
     path('cancel-order/', views.cancel_order),
     path('return-item/', views.return_item),
+    path('cancel-return/', views.cancel_return),
 
 ]

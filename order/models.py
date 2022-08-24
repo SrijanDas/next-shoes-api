@@ -1,9 +1,9 @@
+from django.db.models.signals import post_save
+
 from accounts.models import Account as User, Address
 from django.db import models
 from datetime import datetime, timedelta
-from django.db.models.signals import pre_save, post_save
 from product.models import Product
-from .signals import *
 
 ORDER_STATUS = [
     ('YTD', 'Yet to dispatch'),
@@ -50,10 +50,20 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, related_name='items', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     quantity = models.IntegerField(default=1)
+    return_requested = models.BooleanField(default=False)
     returned = models.BooleanField(default=False)
 
     def __str__(self):
         return '%s' % self.order
+
+
+class ReturnItem(models.Model):
+    order_item = models.OneToOneField(OrderItem, on_delete=models.CASCADE)
+    reason = models.CharField(max_length=200)
+    approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '%s' % self.order_item.id
 
 
 class CancelledOrder(models.Model):
@@ -81,3 +91,9 @@ class Payment(models.Model):
             order.save()
         return super().save(*args, **kwargs)
 
+# def order_item_return_requested_handler(sender, instance, created, *args, **kwargs):
+#     print("order_item_return_requested_handler")
+#     print("instance", instance)
+#     # print(update_fields)
+#
+# post_save.connect(order_item_return_requested_handler, sender=OrderItem)
