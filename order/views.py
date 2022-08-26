@@ -11,7 +11,6 @@ from .models import Order, CancelledOrder, ReturnItem, Payment
 from .serializers import *
 import hmac
 import hashlib
-import base64
 
 # authorize razorpay client with API Keys.
 razorpay_client = razorpay.Client(
@@ -164,6 +163,10 @@ def verify_payment(request):
         payment_data = payload["payment"]["entity"]
         serializer = PaymentSerializer(data=payment_data)
 
+        if serializer.is_valid():
+            serializer.save(payment_data=payload, transaction_id=payment_data['id'],
+                            razorpay_order_id=payment_data['order_id'])
+
         if serializer.is_valid() and request.headers['X-Razorpay-Signature'] == dig:
             # valid payment
             # saving payment data to database
@@ -176,3 +179,5 @@ def verify_payment(request):
     except Exception as e:
         print(e)
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+

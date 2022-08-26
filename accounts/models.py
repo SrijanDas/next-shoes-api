@@ -82,9 +82,10 @@ class Address(models.Model):
     phone = models.CharField(max_length=12)
     pincode = models.CharField(max_length=6)
     address = models.TextField()
-    city = models.CharField(max_length=25)
+    district = models.CharField(max_length=25, null=True, blank=True)
     state = models.CharField(max_length=25)
-    land_mark = models.TextField(max_length=50, null=True, blank=True)
+    city = models.CharField(max_length=25, null=True, blank=True)
+    land_mark = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     verbose_name_plural = "Addresses"

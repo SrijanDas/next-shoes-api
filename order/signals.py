@@ -1,6 +1,7 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from order.models import OrderItem, ReturnItem
+from order.models import *
+from .utils import send_order_confirmation_email
 
 
 @receiver(post_save, sender=ReturnItem)
@@ -18,13 +19,9 @@ def item_return_requested_handler(sender, instance, created, *args, **kwargs):
 
         instance.save()
 
-#
-# def post_save_payment(sender, instance, created, *args, **kwargs):
-#     print("payment_post_save method")
-#     print(created)
-#     if created and instance.status == "captured":
-#         print("valid")
-#         print(instance.razorpay_order_id)
 
+@receiver(post_save, sender=Order, dispatch_uid='order_payment_done')
+def post_save_order(sender, instance, created, *args, **kwargs):
+    if instance.payment_done:
+        send_order_confirmation_email(order_instance=instance)
 
-# post_save.connect(order_item_return_requested_handler, sender=OrderItem)

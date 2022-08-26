@@ -76,7 +76,7 @@ class CancelledOrder(models.Model):
 
 class Payment(models.Model):
     transaction_id = models.CharField(max_length=256, null=True, blank=True)
-    razorpay_order_id = models.CharField(max_length=256, null=True, blank=True)
+    razorpay_order_id = models.CharField(max_length=256, null=True, blank=True, unique=True)
     amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     method = models.CharField(max_length=25, null=True, blank=True)
     status = models.CharField(max_length=20, null=True, blank=True)

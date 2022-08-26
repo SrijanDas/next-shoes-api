@@ -1,0 +1,8 @@
+Hi {{username}},
+Your order has been successfully placed.
+
+Order placed on {{order_confirm_date}}
+Order ID {{order.id}}
+Track Order : {{order_link}}
+
+Thank you for shopping with NextFootwear!
