@@ -31,45 +31,97 @@ def checkout(request):
         sub_total = 0
         try:
             for item in serializer.validated_data['items']:
-                packaging_fees += packaging_fees_per_item
+                packaging_fees += packaging_fees_per_item * item.get('quantity')
                 sub_total += item.get('quantity') * item.get('product').price
 
-            # Razorpay
             total_amount = packaging_fees + sub_total
-            # Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
-            razorpay_amount = int(total_amount) * 100
-
-            # Create a Razorpay Order
-            razorpay_order = razorpay_client.order.create(dict(amount=razorpay_amount,
-                                                               currency=currency,
-                                                               payment_capture=1))
-
-            # razorpay order id of newly created order.
-            razorpay_order_id = razorpay_order['id']
 
             # saving the order
             serializer.save(user=request.user,
                             sub_total=sub_total,
                             packaging_fees=packaging_fees,
                             total_amount=total_amount,
-                            razorpay_order_id=razorpay_order_id)
+                            )
 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print("Error: ", e)
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@authentication_classes([authentication.TokenAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def place_order(request):
+    try:
+        payment_method = request.data.get('paymentMethod')
+        order_id = request.data.get('order_id')
+        order = Order.objects.get(id=order_id)
+
+        if payment_method == 'online':
+            # Razorpay
+
+            # # Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            razorpay_amount = int(order.total_amount) * 100
+
+            # Create a Razorpay Order
+            razorpay_order = razorpay_client.order.create(dict(amount=razorpay_amount,
+                                                               currency=currency,
+                                                               payment_capture=1))
+            #
+            # razorpay order id of newly created order.
+            razorpay_order_id = razorpay_order['id']
             # we need to pass these details to frontend.
             context = {"status": True,
                        "razorpay_details": {
                            'razorpay_order_id': razorpay_order_id,
                            'razorpay_amount': str(razorpay_amount),
                            'currency': currency,
-                       },
-                       "order_details": serializer.data
-                       }
+                       }}
 
-            return Response(context, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            print("Error: ", e)
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+            # creating a payment and setting order payment method
+            Payment.objects.create(order=order, razorpay_order_id=razorpay_order_id)
+            order.payment_method = 'razorpay'
+            order.save()
+            return Response(context)
 
-    return Response({}, status=status.HTTP_400_BAD_REQUEST)
+        elif payment_method == 'cod':
+            order.payment_method = 'cod'
+            order.order_confirmed = True
+            order.save()
+            return Response({'status': True})
+        else:
+            return Response({'status': False})
+
+    except Exception as e:
+        print(e)
+        return Response({'status': False})
+
+
+@api_view(['POST'])
+def verify_payment(request):
+    try:
+        dig = hmac.new(key=bytes(settings.WEBHOOK_SECRET, 'utf-8'), msg=request.body,
+                       digestmod=hashlib.sha256).hexdigest()
+
+        payload = json.loads(request.body)['payload']
+        payment_data = payload["payment"]["entity"]
+        serializer = PaymentSerializer(data=payment_data)
+
+        if serializer.is_valid() and request.headers['X-Razorpay-Signature'] == dig:
+            # valid payment
+            # saving payment data to database
+
+            serializer.save(payment_data=payload, transaction_id=payment_data['id'],
+                            razorpay_order_id=payment_data['order_id'])
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class OrdersList(APIView):
@@ -151,33 +203,3 @@ def cancel_return(request):
     except Exception as e:
         print(e)
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@api_view(['POST'])
-def verify_payment(request):
-    try:
-        dig = hmac.new(key=bytes(settings.WEBHOOK_SECRET, 'utf-8'), msg=request.body,
-                       digestmod=hashlib.sha256).hexdigest()
-
-        payload = json.loads(request.body)['payload']
-        payment_data = payload["payment"]["entity"]
-        serializer = PaymentSerializer(data=payment_data)
-
-        if serializer.is_valid():
-            serializer.save(payment_data=payload, transaction_id=payment_data['id'],
-                            razorpay_order_id=payment_data['order_id'])
-
-        # if serializer.is_valid() and request.headers['X-Razorpay-Signature'] == dig:
-        #     # valid payment
-        #     # saving payment data to database
-        #
-        #     serializer.save(payment_data=payload, transaction_id=payment_data['id'],
-        #                     razorpay_order_id=payment_data['order_id'])
-            return Response(status=status.HTTP_200_OK)
-        # else:
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        print(e)
-        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-

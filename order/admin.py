@@ -5,7 +5,7 @@ from .models import *
 
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
-        'user', 'id', "order_status", "total_amount", "created_at", "delivery_date", "payment_done", "razorpay_order_id")
+        'user', 'id', "order_status", "total_amount", "created_at", "delivery_date", 'payment_method', "payment_done", 'order_confirmed')
 
 
 class OrderItemAdmin(admin.ModelAdmin):

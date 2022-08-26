@@ -20,8 +20,11 @@ def item_return_requested_handler(sender, instance, created, *args, **kwargs):
         instance.save()
 
 
-@receiver(post_save, sender=Order, dispatch_uid='order_payment_done')
+@receiver(post_save, sender=Order, dispatch_uid='order_confirmed')
 def post_save_order(sender, instance, created, *args, **kwargs):
-    if instance.payment_done:
+    if instance.payment_method == 'cod' and instance.order_confirmed:
+        send_order_confirmation_email(order_instance=instance)
+
+    elif instance.payment_method == 'online' and instance.payment_done:
         send_order_confirmation_email(order_instance=instance)
 

@@ -24,10 +24,12 @@ class Order(models.Model):
     order_status = models.CharField(max_length=3,
                                     choices=ORDER_STATUS,
                                     default="YTD")
-    razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)
+    # razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)
     dispatched_on = models.DateField(null=True, blank=True)
     delivery_date = models.DateTimeField(null=True, blank=True)
+    payment_method = models.CharField(max_length=10, null=True, blank=True)
     payment_done = models.BooleanField(default=False)
+    order_confirmed = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_at', ]
@@ -75,6 +77,7 @@ class CancelledOrder(models.Model):
 
 
 class Payment(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
     transaction_id = models.CharField(max_length=256, null=True, blank=True)
     razorpay_order_id = models.CharField(max_length=256, null=True, blank=True, unique=True)
     amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
