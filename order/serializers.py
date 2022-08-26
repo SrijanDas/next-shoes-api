@@ -67,7 +67,7 @@ class OrderPageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ("id", "total_amount", 'packaging_fees', "delivery_date", "items", "order_status", "address", "dispatched_on", "created_at")
+        fields = ("id", "total_amount", 'packaging_fees', 'sub_total', "delivery_date", "items", "order_status", "address", "dispatched_on", "created_at")
 
     def get_address(self, order):
         address = Address.objects.get(id=order.address.id)

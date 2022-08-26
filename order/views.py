@@ -167,15 +167,15 @@ def verify_payment(request):
             serializer.save(payment_data=payload, transaction_id=payment_data['id'],
                             razorpay_order_id=payment_data['order_id'])
 
-        if serializer.is_valid() and request.headers['X-Razorpay-Signature'] == dig:
-            # valid payment
-            # saving payment data to database
-
-            serializer.save(payment_data=payload, transaction_id=payment_data['id'],
-                            razorpay_order_id=payment_data['order_id'])
+        # if serializer.is_valid() and request.headers['X-Razorpay-Signature'] == dig:
+        #     # valid payment
+        #     # saving payment data to database
+        #
+        #     serializer.save(payment_data=payload, transaction_id=payment_data['id'],
+        #                     razorpay_order_id=payment_data['order_id'])
             return Response(status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        # else:
+        #     return Response(status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print(e)
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
