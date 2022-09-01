@@ -1,5 +1,4 @@
 import json
-
 import razorpay
 from django.conf import settings
 from rest_framework import status, authentication, permissions
@@ -11,8 +10,11 @@ from .models import Order, CancelledOrder, ReturnItem, Payment
 from .serializers import *
 import hmac
 import hashlib
+from .utils import send_order_confirmation_email, send_payment_success_email
+import threading
 
 # authorize razorpay client with API Keys.
+
 razorpay_client = razorpay.Client(
     auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
 
@@ -83,7 +85,7 @@ def place_order(request):
 
             # creating a payment and setting order payment method
             Payment.objects.create(order=order, razorpay_order_id=razorpay_order_id)
-            order.payment_method = 'razorpay'
+            order.payment_method = 'online'
             order.save()
             return Response(context)
 
@@ -91,6 +93,11 @@ def place_order(request):
             order.payment_method = 'cod'
             order.order_confirmed = True
             order.save()
+
+            # creating thread for sending email
+            thread = threading.Thread(target=send_order_confirmation_email, args=(order,))
+            thread.start()
+
             return Response({'status': True})
         else:
             return Response({'status': False})
@@ -107,15 +114,31 @@ def verify_payment(request):
                        digestmod=hashlib.sha256).hexdigest()
 
         payload = json.loads(request.body)['payload']
-        payment_data = payload["payment"]["entity"]
-        serializer = PaymentSerializer(data=payment_data)
+        razorpay_order_id = payload["payment"]["entity"]['order_id']
+
+        entity = payload["payment"]["entity"]
+        payment_obj = Payment.objects.get(razorpay_order_id=razorpay_order_id)
+        serializer = PaymentSerializer(payment_obj, entity)
 
         if serializer.is_valid() and request.headers['X-Razorpay-Signature'] == dig:
             # valid payment
-            # saving payment data to database
+            # saving payment data to database and setting order payment done
+            serializer.save(payment_data=payload, transaction_id=entity['id'])
+            order = Order.objects.get(id=payment_obj.order_id)
+            order.payment_done = True
 
-            serializer.save(payment_data=payload, transaction_id=payment_data['id'],
-                            razorpay_order_id=payment_data['order_id'])
+            # thread for sending payment success email
+            thread1 = threading.Thread(target=send_payment_success_email, args=(serializer.data, order))
+            thread1.start()
+
+            if not order.order_confirmed and order.payment_method == 'online':
+                order.order_confirmed = True
+
+                # thread for sending order confirmation email
+                thread2 = threading.Thread(target=send_order_confirmation_email, args=(order,))
+                thread2.start()
+
+            order.save()
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -130,7 +153,7 @@ class OrdersList(APIView):
 
     def get_orders_for_user(self, user):
         try:
-            orders = Order.objects.filter(user=user, payment_done=True).order_by("-delivery_date")
+            orders = Order.objects.filter(user=user, order_confirmed=True).order_by("-delivery_date")
             return orders
         except Exception:
             raise Http404

@@ -1,0 +1,10 @@
+Hi {{username}},
+Thank you for your payment of {{payment_data.amount}} {{payment_data.currency}}.
+
+Payment Details:
+Order ID : {{order_id}}
+Amount : {{payment_data.amount}}
+Transaction Id : {{payment_data.transaction_id}}
+Date : {{payment_date}}
+
+Thank you for shopping with NextFootwear!

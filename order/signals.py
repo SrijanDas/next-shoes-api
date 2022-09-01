@@ -1,7 +1,7 @@
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from order.models import *
-from .utils import send_order_confirmation_email
+# from .utils import send_order_confirmation_email
 
 
 @receiver(post_save, sender=ReturnItem)
@@ -20,11 +20,11 @@ def item_return_requested_handler(sender, instance, created, *args, **kwargs):
         instance.save()
 
 
-@receiver(post_save, sender=Order, dispatch_uid='order_confirmed')
-def post_save_order(sender, instance, created, *args, **kwargs):
-    if instance.payment_method == 'cod' and instance.order_confirmed:
-        send_order_confirmation_email(order_instance=instance)
-
-    elif instance.payment_method == 'online' and instance.payment_done:
-        send_order_confirmation_email(order_instance=instance)
+# @receiver(post_save, sender=Order, dispatch_uid='order_confirmed')
+# def post_save_order(sender, instance, created, *args, **kwargs):
+#     if instance.payment_method == 'cod' and instance.order_confirmed:
+#         send_order_confirmation_email(order_instance=instance)
+#
+#     elif instance.payment_method == 'online' and instance.payment_done:
+#         send_order_confirmation_email(order_instance=instance)
 

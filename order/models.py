@@ -87,13 +87,6 @@ class Payment(models.Model):
     payment_data = models.JSONField(null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if self.status == "captured":
-            order = Order.objects.get(razorpay_order_id=self.razorpay_order_id)
-            order.payment_done = True
-            order.save()
-        return super().save(*args, **kwargs)
-
 # def order_item_return_requested_handler(sender, instance, created, *args, **kwargs):
 #     print("order_item_return_requested_handler")
 #     print("instance", instance)

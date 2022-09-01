@@ -78,10 +78,20 @@ class OrderPageSerializer(serializers.ModelSerializer):
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
-        fields = "__all__"
+        fields = ("transaction_id", "amount", "method", "currency", "order", "date_added")
 
     def create(self, validated_data):
         validated_data['amount'] = validated_data['amount'] / 100
         payment = Payment.objects.create(**validated_data)
         return payment
+
+    def update(self, instance, validated_data):
+        instance.amount = validated_data['amount'] / 100
+        instance.transaction_id = validated_data.get('transaction_id', instance.transaction_id)
+        instance.method = validated_data.get('method', instance.method)
+        instance.status = validated_data.get('status', instance.status)
+        instance.currency = validated_data.get('currency', instance.currency)
+        instance.payment_data = validated_data.get('payment_data', instance.payment_data)
+        instance.save()
+        return instance
 
