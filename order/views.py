@@ -119,8 +119,10 @@ def verify_payment(request):
         entity = payload["payment"]["entity"]
         payment_obj = Payment.objects.get(razorpay_order_id=razorpay_order_id)
         serializer = PaymentSerializer(payment_obj, entity)
-
+        # print("valid")
+        # print(entity)
         if serializer.is_valid() and request.headers['X-Razorpay-Signature'] == dig:
+
             # valid payment
             # saving payment data to database and setting order payment done
             serializer.save(payment_data=payload, transaction_id=entity['id'])
