@@ -143,6 +143,8 @@ def verify_payment(request):
             order.save()
             return Response(status=status.HTTP_200_OK)
         else:
+            print('dig', dig)
+            print(request.headers['X-Razorpay-Signature'])
             return Response(status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print(e)
