@@ -11,4 +11,6 @@ urlpatterns = [
     # path('products/details/<slug:slug>', views.ProductVariantDetail.as_view()),
     # path('products/get-image-url/<slug:slug>', views.get_image)
 
+    path('validate-cart/', views.validate_cart),
+
 ]

@@ -1,9 +1,9 @@
-import rest_framework.status
 from django.db.models import Q
 from django.http import Http404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import status
 
 from .serializers import *
 from .models import *
@@ -95,3 +95,27 @@ def get_image(request, slug):
         pass
     except Exception:
         raise Http404
+
+
+@api_view(['Get', 'POST'])
+def validate_cart(request):
+    items = request.data.get('items')
+
+    if not items:
+        return Response({}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    cart_valid = True
+    product_data = []
+    for item in items:
+        product = Product.objects.get(id=item['product'])
+        if product.quantity < item['quantity']:
+            cart_valid = False
+
+        product_data.append({'id': product.id, 'quantity': product.quantity})
+
+    if cart_valid:
+        return Response({'status': True, 'message': "Cart is valid", 'product_data': product_data}, status=status.HTTP_200_OK)
+
+    else:
+        return Response({'status': False, 'message': "Some items in your cart are not available", 'product_data': product_data},
+                        status=status.HTTP_200_OK)

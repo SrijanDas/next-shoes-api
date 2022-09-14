@@ -10,7 +10,8 @@ from .models import Order, CancelledOrder, ReturnItem, Payment
 from .serializers import *
 import hmac
 import hashlib
-from .utils import send_order_confirmation_email, send_payment_success_email
+from .emails import send_order_confirmation_email, send_payment_success_email
+from .utils import readjust_product_quantity
 import threading
 
 # authorize razorpay client with API Keys.
@@ -98,6 +99,10 @@ def place_order(request):
             thread = threading.Thread(target=send_order_confirmation_email, args=(order,))
             thread.start()
 
+            # thread for readjusting product quantity
+            thread2 = threading.Thread(target=readjust_product_quantity, args=(order,))
+            thread2.start()
+
             return Response({'status': True})
         else:
             return Response({'status': False})
@@ -139,6 +144,10 @@ def verify_payment(request):
                 # thread for sending order confirmation email
                 thread2 = threading.Thread(target=send_order_confirmation_email, args=(order,))
                 thread2.start()
+
+                # thread for readjusting product quantity
+                thread3 = threading.Thread(target=readjust_product_quantity, args=(order,))
+                thread3.start()
 
             order.save()
             return Response(status=status.HTTP_200_OK)
