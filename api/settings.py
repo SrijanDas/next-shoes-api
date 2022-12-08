@@ -106,7 +106,7 @@ DATABASES = {
         'USER': 'postgres' if DEBUG else os.getenv('PG_USER'),
         'PASSWORD': os.getenv('PG_LOCAL_PASSWORD') if DEBUG else os.getenv('PG_PASSWORD'),
         'HOST': 'localhost' if DEBUG else os.getenv('PG_HOST'),
-        'PORT': '5432',
+        'PORT': '5432' if DEBUG else os.getenv('PG_PORT'),
     }
 }
 
